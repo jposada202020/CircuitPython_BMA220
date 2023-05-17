@@ -15,7 +15,7 @@ BMA220 Bosch Circuitpython Driver library
 
 from micropython import const
 from adafruit_bus_device import i2c_device
-from adafruit_register.i2c_struct import ROUnaryStruct, UnaryStruct, Struct
+from adafruit_register.i2c_struct import ROUnaryStruct, Struct
 from adafruit_register.i2c_bits import RWBits
 
 try:
@@ -123,7 +123,11 @@ class BMA220:
         self._acc_range_mem = value
 
     @property
-    def acceleration(self):
+    def acceleration(self) -> Tuple[float, float, float]:
+        """
+        Acceleration
+        :return: acceleration
+        """
         bufx, bufy, bufz = self._acceleration
 
         factor = acc_range_factor[self._acc_range_mem]
