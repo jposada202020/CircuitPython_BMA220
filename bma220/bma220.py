@@ -31,8 +31,10 @@ __repo__ = "https://github.com/jposada202020/CircuitPython_BMA220.git"
 
 
 _REG_WHOAMI = const(0x00)
+_FILTER_CONF = const(0x20)
 _ACC_RANGE = const(0x22)
 _SLEEP_CONF = const(0x0F)
+_LATCH_CONF = const(0x1C)
 
 # Acceleration range
 ACC_RANGE_2 = const(0b00)
@@ -75,6 +77,41 @@ Z_DISABLED = const(0b0)
 Z_ENABLED = const(0b1)
 axis_enabled_values = (X_DISABLED, X_ENABLED)
 
+# Filter Bandwidth
+ACCEL_32HZ = const(0x05)
+ACCEL_64HZ = const(0x04)
+ACCEL_125HZ = const(0x03)
+ACCEL_250HZ = const(0x02)
+ACCEL_500HZ = const(0x01)
+ACCEL_1000HZ = const(0x00)
+filter_bandwidth_values = (
+    ACCEL_32HZ,
+    ACCEL_64HZ,
+    ACCEL_125HZ,
+    ACCEL_250HZ,
+    ACCEL_500HZ,
+    ACCEL_1000HZ,
+)
+
+UNLATCHED = const(0b000)
+LATCH_FOR_025S = const(0b001)
+LATCH_FOR_050S = const(0b010)
+LATCH_FOR_1S = const(0b011)
+LATCH_FOR_2S = const(0b100)
+LATCH_FOR_4S = const(0b101)
+LATCH_FOR_8S = const(0b110)
+LATCHED = const(0b111)
+latched_mode_values = (
+    UNLATCHED,
+    LATCH_FOR_025S,
+    LATCH_FOR_050S,
+    LATCH_FOR_1S,
+    LATCH_FOR_2S,
+    LATCH_FOR_4S,
+    LATCH_FOR_8S,
+    LATCHED,
+)
+
 
 class BMA220:
     """Driver for the BMA220 Sensor connected over I2C.
@@ -113,6 +150,8 @@ class BMA220:
     _device_id = ROUnaryStruct(_REG_WHOAMI, "B")
 
     _acc_range = RWBits(2, _ACC_RANGE, 0)
+    _filter_bandwidth = RWBits(4, _FILTER_CONF, 0)
+    _latched_mode = RWBits(3, _LATCH_CONF, 4)
 
     # Acceleration Data
     _acceleration = Struct(0x04, "BBB")
@@ -304,6 +343,86 @@ class BMA220:
         if value not in axis_enabled_values:
             raise ValueError("Value must be a valid z_enabled setting")
         self._z_enabled = value
+
+    @property
+    def filter_bandwidth(self) -> str:
+        """
+        Sensor filter_bandwidth
+
+        +---------------------------------+------------------+
+        | Mode                            | Value            |
+        +=================================+==================+
+        | :py:const:`bma220.ACCEL_32HZ`   | :py:const:`0x05` |
+        +---------------------------------+------------------+
+        | :py:const:`bma220.ACCEL_64HZ`   | :py:const:`0x04` |
+        +---------------------------------+------------------+
+        | :py:const:`bma220.ACCEL_125HZ`  | :py:const:`0x03` |
+        +---------------------------------+------------------+
+        | :py:const:`bma220.ACCEL_250HZ`  | :py:const:`0x02` |
+        +---------------------------------+------------------+
+        | :py:const:`bma220.ACCEL_500HZ`  | :py:const:`0x01` |
+        +---------------------------------+------------------+
+        | :py:const:`bma220.ACCEL_1000HZ` | :py:const:`0x00` |
+        +---------------------------------+------------------+
+        """
+        values = (
+            "ACCEL_32HZ",
+            "ACCEL_64HZ",
+            "ACCEL_125HZ",
+            "ACCEL_250HZ",
+            "ACCEL_500HZ",
+            "ACCEL_1000HZ",
+        )
+        return values[self._filter_bandwidth]
+
+    @filter_bandwidth.setter
+    def filter_bandwidth(self, value: int) -> None:
+        if value not in filter_bandwidth_values:
+            raise ValueError("Value must be a valid filter_bandwidth setting")
+        self._filter_bandwidth = value
+
+    @property
+    def latched_mode(self) -> str:
+        """
+        Sensor latched_mode
+
+        +-----------------------------------+-------------------+
+        | Mode                              | Value             |
+        +===================================+===================+
+        | :py:const:`bma220.UNLATCHED`      | :py:const:`0b000` |
+        +-----------------------------------+-------------------+
+        | :py:const:`bma220.LATCH_FOR_025S` | :py:const:`0b001` |
+        +-----------------------------------+-------------------+
+        | :py:const:`bma220.LATCH_FOR_050S` | :py:const:`0b010` |
+        +-----------------------------------+-------------------+
+        | :py:const:`bma220.LATCH_FOR_1S`   | :py:const:`0b011` |
+        +-----------------------------------+-------------------+
+        | :py:const:`bma220.LATCH_FOR_2S`   | :py:const:`0b100` |
+        +-----------------------------------+-------------------+
+        | :py:const:`bma220.LATCH_FOR_4S`   | :py:const:`0b101` |
+        +-----------------------------------+-------------------+
+        | :py:const:`bma220.LATCH_FOR_8S`   | :py:const:`0b110` |
+        +-----------------------------------+-------------------+
+        | :py:const:`bma220.LATCHED`        | :py:const:`0b111` |
+        +-----------------------------------+-------------------+
+        """
+        values = (
+            "UNLATCHED",
+            "LATCH_FOR_025S",
+            "LATCH_FOR_050S",
+            "LATCH_FOR_1S",
+            "LATCH_FOR_2S",
+            "LATCH_FOR_4S",
+            "LATCH_FOR_8S",
+            "LATCHED",
+        )
+        return values[self._latched_mode]
+
+    @latched_mode.setter
+    def latched_mode(self, value: int) -> None:
+        if value not in latched_mode_values:
+            raise ValueError("Value must be a valid latched_mode setting")
+        self._latched_mode = value
 
     @property
     def acceleration(self) -> Tuple[float, float, float]:

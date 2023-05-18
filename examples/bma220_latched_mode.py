@@ -9,13 +9,13 @@ from bma220 import bma220
 i2c = board.I2C()
 bma = bma220.BMA220(i2c)
 
-bma.sleep_duration = bma220.SLEEP_10MS
+bma.latched_mode = bma220.LATCH_FOR_2S
 
 while True:
-    for sleep_duration in bma220.sleep_duration_values:
-        print("Current Sleep duration setting: ", bma.sleep_duration)
+    for latched_mode in bma220.latched_mode_values:
+        print("Current Latched mode setting: ", bma.latched_mode)
         for _ in range(10):
             accx, accy, accz = bma.acceleration
             print("x:{:.2f}g, y:{:.2f}g, z:{:.2f}g".format(accx, accy, accz))
             time.sleep(0.5)
-        bma.sleep_duration = sleep_duration
+        bma.latched_mode = latched_mode

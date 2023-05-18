@@ -24,3 +24,30 @@ Example showing the Sleep duration setting
 .. literalinclude:: ../examples/bma220_sleep_duration.py
     :caption: examples/bma220_sleep_duration.py
     :linenos:
+
+Filter bandwidth settings
+--------------------------
+
+Example showing the Filter bandwidth setting
+
+.. literalinclude:: ../examples/bma220_filter_bandwidth.py
+    :caption: examples/bma220_filter_bandwidth.py
+    :linenos:
+
+Latched mode settings
+----------------------
+
+Example showing the Latched mode setting
+
+.. literalinclude:: ../examples/bma220_latched_mode.py
+    :caption: examples/bma220_latched_mode.py
+    :linenos:
+
+Slope Test
+----------------------
+
+Example for the Slope mode
+
+.. literalinclude:: ../examples/bma220_slope_test.py
+    :caption: examples/bma220_slope_test.py
+    :linenos:

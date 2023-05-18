@@ -4,7 +4,7 @@
 
 import time
 import board
-import bma220
+from bma220 import bma220
 
 i2c = board.I2C()
 bma = bma220.BMA220(i2c)
