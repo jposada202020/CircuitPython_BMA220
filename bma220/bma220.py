@@ -175,7 +175,10 @@ class BMA220:
     @property
     def acc_range(self) -> str:
         """
-        Sensor acc_range
+        The BMA220 has four different range settings for the full scale acceleration range.
+        In dependence of the use case always the lowest full scale range with the maximum
+        resolution should be selected. Please refer to literature to find out, which full
+        scale acceleration range, which sensitivity or which resolution is the ideal one.
 
         +---------------------------------+------------------+
         | Mode                            | Value            |
@@ -207,7 +210,11 @@ class BMA220:
     @property
     def sleep_enabled(self) -> str:
         """
-        Sensor sleep_enabled
+        The BMA220 supports a low-power mode. In this low-power mode, the chip wakes up
+        periodically, enables the interrupt controller and goes back to sleep if no
+        interrupt has occurred.
+        The low-power mode can be enabled by setting :attr:`sleep_enabled` and by enabling
+        the data ready interrupt (or any other interrupt, see chapter 5 in the datasheet)
 
         +-----------------------------------+-----------------+
         | Mode                              | Value           |
@@ -229,7 +236,7 @@ class BMA220:
     @property
     def sleep_duration(self) -> str:
         """
-        Sensor sleep_duration
+        Sensor sleep_duration.
 
         +--------------------------------+-------------------+
         | Mode                           | Value             |
@@ -273,6 +280,8 @@ class BMA220:
     def x_enabled(self) -> str:
         """
         Sensor x_enabled
+        In order to optimize further power consumption of the BMA220, data evaluation
+        of individual axes can be deactivated. Per default, all three axes are active.
 
         +-------------------------------+-----------------+
         | Mode                          | Value           |
@@ -298,6 +307,8 @@ class BMA220:
     def y_enabled(self) -> str:
         """
         Sensor y_enabled
+        In order to optimize further power consumption of the BMA220, data evaluation
+        of individual axes can be deactivated. Per default, all three axes are active.
 
         +-------------------------------+-----------------+
         | Mode                          | Value           |
@@ -323,6 +334,8 @@ class BMA220:
     def z_enabled(self) -> str:
         """
         Sensor z_enabled
+        In order to optimize further power consumption of the BMA220, data evaluation
+        of individual axes can be deactivated. Per default, all three axes are active.
 
         +-------------------------------+-----------------+
         | Mode                          | Value           |
@@ -347,7 +360,9 @@ class BMA220:
     @property
     def filter_bandwidth(self) -> str:
         """
-        Sensor filter_bandwidth
+        The BMA220 has a digital filter that can be configured. To always ensure
+         an ideal cut off frequency of the filter the BMA220 is adjusting the
+         sample rate automatically.
 
         +---------------------------------+------------------+
         | Mode                            | Value            |
@@ -386,25 +401,37 @@ class BMA220:
         """
         Sensor latched_mode
 
-        +-----------------------------------+-------------------+
-        | Mode                              | Value             |
-        +===================================+===================+
-        | :py:const:`bma220.UNLATCHED`      | :py:const:`0b000` |
-        +-----------------------------------+-------------------+
-        | :py:const:`bma220.LATCH_FOR_025S` | :py:const:`0b001` |
-        +-----------------------------------+-------------------+
-        | :py:const:`bma220.LATCH_FOR_050S` | :py:const:`0b010` |
-        +-----------------------------------+-------------------+
-        | :py:const:`bma220.LATCH_FOR_1S`   | :py:const:`0b011` |
-        +-----------------------------------+-------------------+
-        | :py:const:`bma220.LATCH_FOR_2S`   | :py:const:`0b100` |
-        +-----------------------------------+-------------------+
-        | :py:const:`bma220.LATCH_FOR_4S`   | :py:const:`0b101` |
-        +-----------------------------------+-------------------+
-        | :py:const:`bma220.LATCH_FOR_8S`   | :py:const:`0b110` |
-        +-----------------------------------+-------------------+
-        | :py:const:`bma220.LATCHED`        | :py:const:`0b111` |
-        +-----------------------------------+-------------------+
+        The interrupt controller can be used in two modes
+
+        - **Latched mode**: Once one of the configured interrupt conditions applies,
+          the INT pin is asserted and must be reset by the external master through
+          the digital interface.
+
+        - **Non-Latched mode**: The interrupt controller clears the INT signal once
+          the interrupt condition no longer applies.
+
+        The interrupt output can be programmed by :attr:`latched_mode` to be either
+        unlatched (‘000’) or latched permanently (‘111’) or have different latching times.
+
+        +-----------------------------------+--------------------------------+
+        | Mode                              | Value                          |
+        +===================================+================================+
+        | :py:const:`bma220.UNLATCHED`      | :py:const:`0b000`              |
+        +-----------------------------------+--------------------------------+
+        | :py:const:`bma220.LATCH_FOR_025S` | :py:const:`0b001` 0.25 seconds |
+        +-----------------------------------+--------------------------------+
+        | :py:const:`bma220.LATCH_FOR_050S` | :py:const:`0b010` 0.5 seconds  |
+        +-----------------------------------+--------------------------------+
+        | :py:const:`bma220.LATCH_FOR_1S`   | :py:const:`0b011` 1 second     |
+        +-----------------------------------+--------------------------------+
+        | :py:const:`bma220.LATCH_FOR_2S`   | :py:const:`0b100` 2 seconds    |
+        +-----------------------------------+--------------------------------+
+        | :py:const:`bma220.LATCH_FOR_4S`   | :py:const:`0b101` 4 seconds    |
+        +-----------------------------------+--------------------------------+
+        | :py:const:`bma220.LATCH_FOR_8S`   | :py:const:`0b110` 8 seconds    |
+        +-----------------------------------+--------------------------------+
+        | :py:const:`bma220.LATCHED`        | :py:const:`0b111`              |
+        +-----------------------------------+--------------------------------+
         """
         values = (
             "UNLATCHED",

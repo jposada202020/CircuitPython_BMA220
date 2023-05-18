@@ -51,14 +51,29 @@ slope_sign_values = (SLOPE_SIGN_POSITIVE, SLOPE_SIGN_NEGATIVE)
 
 class BMA220_SLOPE(BMA220):
     """
-    BMA220 Slope mode class.
-    The any-motion detection uses the slope between two successive acceleration
-    signals to detect changes in motion. It generates an interrupt when a preset
-    threshold slope_th is exceeded. The threshold can be configured between 0 and
-    the maximum acceleration value corresponding to the selected measurement range.
-    The time difference between the successive acceleration signals depends on
-    the bandwidth of the configurable low pass filter and corresponds roughly
-    to 1/(2*bandwidth) (Δt=1/(2*bw)).
+    The any-motion detection uses the slope between two successive acceleration signals to detect
+    changes in motion. It generates an interrupt when a preset threshold slope_th is exceeded. The
+    threshold can be configured between 0 and the maximum acceleration value corresponding to
+    the selected measurement range. The time difference between the successive acceleration
+    signals depends on the bandwidth of the configurable low pass filter and corresponds roughly to
+    1/(2*bandwidth) (Δt=1/(2*bw)).
+    In order to suppress failure signals, the interrupt is only generated if a certain number
+    :attr:`slope_duration` of consecutive slope data points is above the slope threshold
+    :attr:`slope_threshold`.
+    If the same number of data points falls below the threshold, the interrupt is reset.
+    The criteria for any-motion detection are fulfilled and the slope interrupt is
+    generated if any of the enabled channels exceeds the threshold :attr:`slope_threshold`
+    for :attr:`slope_threshold` consecutive times. As soon as all the enabled channels fall
+    or stay below this threshold for :attr:`slope_threshold` consecutive times the interrupt
+    is reset unless interrupt signal is latched.
+    The any-motion interrupt logic sends out the signals of the axis that has triggered
+    the interrupt (:attr:`slope_interrupt_info`) and the signal of motion
+    direction (:attr:`slope_sign`).
+    When serial interface is active, any-motion detection logic is enabled if any of
+    the any-motion enable register bits is set. To disable the any-motion interrupt,
+    clear all the axis enable bits.
+    In the dedicated wake-up mode (6.1), all three axes are enabled for any-motion detection
+    whether the individual axis enable bits are set or not.
     """
 
     _slope_z_enabled = RWBit(_CONF, 3)
