@@ -17,6 +17,7 @@ from micropython import const
 from adafruit_bus_device import i2c_device
 from adafruit_register.i2c_struct import ROUnaryStruct, Struct
 from adafruit_register.i2c_bits import RWBits
+from adafruit_register.i2c_bit import RWBit
 
 try:
     from busio import I2C
@@ -31,6 +32,7 @@ __repo__ = "https://github.com/jposada202020/CircuitPython_BMA220.git"
 
 _REG_WHOAMI = const(0x00)
 _ACC_RANGE = const(0x22)
+_SLEEP_CONF = const(0x0F)
 
 # Acceleration range
 ACC_RANGE_2 = const(0b00)
@@ -39,6 +41,39 @@ ACC_RANGE_8 = const(0b10)
 ACC_RANGE_16 = const(0b11)
 acc_range_values = (ACC_RANGE_2, ACC_RANGE_4, ACC_RANGE_8, ACC_RANGE_16)
 acc_range_factor = {0b00: 16, 0b01: 8, 0b10: 4, 0b11: 2}
+
+SLEEP_DISABLED = const(0b0)
+SLEEP_ENABLED = const(0b1)
+sleep_enabled_values = (SLEEP_DISABLED, SLEEP_ENABLED)
+
+# Sleep Duration
+SLEEP_2MS = const(0b000)
+SLEEP_10MS = const(0b001)
+SLEEP_25MS = const(0b010)
+SLEEP_50MS = const(0b011)
+SLEEP_100MS = const(0b100)
+SLEEP_500MS = const(0b101)
+SLEEP_1S = const(0b110)
+SLEEP_2S = const(0b111)
+sleep_duration_values = (
+    SLEEP_2MS,
+    SLEEP_10MS,
+    SLEEP_25MS,
+    SLEEP_50MS,
+    SLEEP_100MS,
+    SLEEP_500MS,
+    SLEEP_1S,
+    SLEEP_2S,
+)
+
+# Axis Enabled Values
+X_DISABLED = const(0b0)
+X_ENABLED = const(0b1)
+Y_DISABLED = const(0b0)
+Y_ENABLED = const(0b1)
+Z_DISABLED = const(0b0)
+Z_ENABLED = const(0b1)
+axis_enabled_values = (X_DISABLED, X_ENABLED)
 
 
 class BMA220:
@@ -82,6 +117,14 @@ class BMA220:
     # Acceleration Data
     _acceleration = Struct(0x04, "BBB")
 
+    # Register (0x0F)
+    # |----|sleep_en|sleep_dur(2)|sleep_dur(1)|sleep_dur(0)|en_x_channel|en_y_channel|en_z_channel|
+    _z_enabled = RWBit(_SLEEP_CONF, 0)
+    _y_enabled = RWBit(_SLEEP_CONF, 1)
+    _x_enabled = RWBit(_SLEEP_CONF, 2)
+    _sleep_duration = RWBits(3, _SLEEP_CONF, 3)
+    _sleep_enabled = RWBit(_SLEEP_CONF, 6)
+
     def __init__(self, i2c_bus: I2C, address: int = 0x0A) -> None:
         self.i2c_device = i2c_device.I2CDevice(i2c_bus, address)
 
@@ -121,6 +164,146 @@ class BMA220:
             raise ValueError("Value must be a valid acc_range setting")
         self._acc_range = value
         self._acc_range_mem = value
+
+    @property
+    def sleep_enabled(self) -> str:
+        """
+        Sensor sleep_enabled
+
+        +-----------------------------------+-----------------+
+        | Mode                              | Value           |
+        +===================================+=================+
+        | :py:const:`bma220.SLEEP_DISABLED` | :py:const:`0b0` |
+        +-----------------------------------+-----------------+
+        | :py:const:`bma220.SLEEP_ENABLED`  | :py:const:`0b1` |
+        +-----------------------------------+-----------------+
+        """
+        values = ("SLEEP_DISABLED", "SLEEP_ENABLED")
+        return values[self._sleep_enabled]
+
+    @sleep_enabled.setter
+    def sleep_enabled(self, value: int) -> None:
+        if value not in sleep_enabled_values:
+            raise ValueError("Value must be a valid sleep_enabled setting")
+        self._sleep_enabled = value
+
+    @property
+    def sleep_duration(self) -> str:
+        """
+        Sensor sleep_duration
+
+        +--------------------------------+-------------------+
+        | Mode                           | Value             |
+        +================================+===================+
+        | :py:const:`bma220.SLEEP_2MS`   | :py:const:`0b000` |
+        +--------------------------------+-------------------+
+        | :py:const:`bma220.SLEEP_10MS`  | :py:const:`0b001` |
+        +--------------------------------+-------------------+
+        | :py:const:`bma220.SLEEP_25MS`  | :py:const:`0b010` |
+        +--------------------------------+-------------------+
+        | :py:const:`bma220.SLEEP_50MS`  | :py:const:`0b011` |
+        +--------------------------------+-------------------+
+        | :py:const:`bma220.SLEEP_100MS` | :py:const:`0b100` |
+        +--------------------------------+-------------------+
+        | :py:const:`bma220.SLEEP_500MS` | :py:const:`0b101` |
+        +--------------------------------+-------------------+
+        | :py:const:`bma220.SLEEP_1S`    | :py:const:`0b110` |
+        +--------------------------------+-------------------+
+        | :py:const:`bma220.SLEEP_2S`    | :py:const:`0b111` |
+        +--------------------------------+-------------------+
+        """
+        values = (
+            "SLEEP_2MS",
+            "SLEEP_10MS",
+            "SLEEP_25MS",
+            "SLEEP_50MS",
+            "SLEEP_100MS",
+            "SLEEP_500MS",
+            "SLEEP_1S",
+            "SLEEP_2S",
+        )
+        return values[self._sleep_duration]
+
+    @sleep_duration.setter
+    def sleep_duration(self, value: int) -> None:
+        if value not in sleep_duration_values:
+            raise ValueError("Value must be a valid sleep_duration setting")
+        self._sleep_duration = value
+
+    @property
+    def x_enabled(self) -> str:
+        """
+        Sensor x_enabled
+
+        +-------------------------------+-----------------+
+        | Mode                          | Value           |
+        +===============================+=================+
+        | :py:const:`bma220.X_DISABLED` | :py:const:`0b0` |
+        +-------------------------------+-----------------+
+        | :py:const:`bma220.X_ENABLED`  | :py:const:`0b1` |
+        +-------------------------------+-----------------+
+        """
+        values = (
+            "X_DISABLED",
+            "X_ENABLED",
+        )
+        return values[self._x_enabled]
+
+    @x_enabled.setter
+    def x_enabled(self, value: int) -> None:
+        if value not in axis_enabled_values:
+            raise ValueError("Value must be a valid x_enabled setting")
+        self._x_enabled = value
+
+    @property
+    def y_enabled(self) -> str:
+        """
+        Sensor y_enabled
+
+        +-------------------------------+-----------------+
+        | Mode                          | Value           |
+        +===============================+=================+
+        | :py:const:`bma220.Y_DISABLED` | :py:const:`0b0` |
+        +-------------------------------+-----------------+
+        | :py:const:`bma220.Y_ENABLED`  | :py:const:`0b1` |
+        +-------------------------------+-----------------+
+        """
+        values = (
+            "Y_DISABLED",
+            "Y_ENABLED",
+        )
+        return values[self._y_enabled]
+
+    @y_enabled.setter
+    def y_enabled(self, value: int) -> None:
+        if value not in axis_enabled_values:
+            raise ValueError("Value must be a valid y_enabled setting")
+        self._y_enabled = value
+
+    @property
+    def z_enabled(self) -> str:
+        """
+        Sensor z_enabled
+
+        +-------------------------------+-----------------+
+        | Mode                          | Value           |
+        +===============================+=================+
+        | :py:const:`bma220.Z_DISABLED` | :py:const:`0b0` |
+        +-------------------------------+-----------------+
+        | :py:const:`bma220.Z_ENABLED`  | :py:const:`0b1` |
+        +-------------------------------+-----------------+
+        """
+        values = (
+            "Z_DISABLED",
+            "Z_ENABLED",
+        )
+        return values[self._z_enabled]
+
+    @z_enabled.setter
+    def z_enabled(self, value: int) -> None:
+        if value not in axis_enabled_values:
+            raise ValueError("Value must be a valid z_enabled setting")
+        self._z_enabled = value
 
     @property
     def acceleration(self) -> Tuple[float, float, float]:
