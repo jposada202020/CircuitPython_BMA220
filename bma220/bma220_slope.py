@@ -17,12 +17,17 @@ from adafruit_register.i2c_bit import RWBit, ROBit
 from adafruit_register.i2c_bits import RWBits
 from bma220.bma220 import BMA220
 
+try:
+    from typing import Tuple
+except ImportError:
+    pass
 
 __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/jposada202020/CircuitPython_BMA220.git"
 
 _CONF = const(0x1A)
 _SLOPE_INFO = const(0x12)
+_SLOPE_INFO2 = const(0x16)
 _INTERRUPTS = const(0x18)
 
 # Slope Axis Enabled Values
@@ -38,6 +43,10 @@ slope_axis_enabled_values = (SLOPE_X_DISABLED, SLOPE_X_ENABLED)
 FILTER_DISABLED = const(0b0)
 FILTER_ENABLED = const(0b1)
 filter_values = (FILTER_DISABLED, FILTER_ENABLED)
+
+SLOPE_SIGN_POSITIVE = const(0b00)
+SLOPE_SIGN_NEGATIVE = const(0b01)
+slope_sign_values = (SLOPE_SIGN_POSITIVE, SLOPE_SIGN_NEGATIVE)
 
 
 class BMA220_SLOPE(BMA220):
@@ -59,6 +68,11 @@ class BMA220_SLOPE(BMA220):
     _slope_threshold = RWBits(4, _SLOPE_INFO, 2)
     _slope_duration = RWBits(2, _SLOPE_INFO, 0)
     _slope_filter_enable = RWBit(_SLOPE_INFO, 6)
+
+    _slope_sign = RWBit(_SLOPE_INFO2, 0)
+    _slope_z_first = RWBit(_SLOPE_INFO2, 1)
+    _slope_y_first = RWBit(_SLOPE_INFO2, 2)
+    _slope_x_first = RWBit(_SLOPE_INFO2, 3)
 
     def __init__(self, i2c_bus):
         super().__init__(i2c_bus)
@@ -224,3 +238,37 @@ class BMA220_SLOPE(BMA220):
             raise ValueError("Value must be a valid slope_filter setting")
 
         self._slope_filter_enable = value
+
+    @property
+    def slope_interrupt_info(self) -> Tuple[bool, bool, bool]:
+        """
+        Sensor slope_z_enabled
+
+        """
+
+        return self._slope_x_first, self._slope_y_first, self._slope_z_first
+
+    @property
+    def slope_sign(self) -> str:
+        """
+        Sensor slope_sign
+
+        +----------------------------------------------+------------------+
+        | Mode                                         | Value            |
+        +==============================================+==================+
+        | :py:const:`bma220_slope.SLOPE_SIGN_POSITIVE` | :py:const:`0b00` |
+        +----------------------------------------------+------------------+
+        | :py:const:`bma220_slope.SLOPE_SIGN_NEGATIVE` | :py:const:`0b01` |
+        +----------------------------------------------+------------------+
+        """
+        values = (
+            "SLOPE_SIGN_POSITIVE",
+            "SLOPE_SIGN_NEGATIVE",
+        )
+        return values[self._slope_sign]
+
+    @slope_sign.setter
+    def slope_sign(self, value: int) -> None:
+        if value not in slope_sign_values:
+            raise ValueError("Value must be a valid slope_sign setting")
+        self._slope_sign = value

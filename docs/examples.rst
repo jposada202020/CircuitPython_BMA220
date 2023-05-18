@@ -51,3 +51,12 @@ Example for the Slope mode
 .. literalinclude:: ../examples/bma220_slope_test.py
     :caption: examples/bma220_slope_test.py
     :linenos:
+
+Slope sign settings
+--------------------
+
+Example showing the Slope sign setting
+
+.. literalinclude:: ../examples/bma220_slope_slope_sign.py
+    :caption: examples/bma220_slope_slope_sign.py
+    :linenos:
