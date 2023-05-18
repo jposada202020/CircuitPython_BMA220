@@ -7,15 +7,14 @@
 
 BMA220 Slope Bosch Circuitpython Driver library
 
-
 * Author(s): Jose D. Montoya
-
 
 """
 # pylint: disable=useless-parent-delegation,no-name-in-module
 
 from micropython import const
 from adafruit_register.i2c_bit import RWBit, ROBit
+from adafruit_register.i2c_bits import RWBits
 from bma220.bma220 import BMA220
 
 
@@ -23,6 +22,7 @@ __version__ = "0.0.0+auto.0"
 __repo__ = "https://github.com/jposada202020/CircuitPython_BMA220.git"
 
 _CONF = const(0x1A)
+_SLOPE_INFO = const(0x12)
 _INTERRUPTS = const(0x18)
 
 # Slope Axis Enabled Values
@@ -34,16 +34,31 @@ SLOPE_Z_DISABLED = const(0b0)
 SLOPE_Z_ENABLED = const(0b1)
 slope_axis_enabled_values = (SLOPE_X_DISABLED, SLOPE_X_ENABLED)
 
+# Filter Values
+FILTER_DISABLED = const(0b0)
+FILTER_ENABLED = const(0b1)
+filter_values = (FILTER_DISABLED, FILTER_ENABLED)
+
 
 class BMA220_SLOPE(BMA220):
     """
-    BMA220 Slope mode class
+    BMA220 Slope mode class.
+    The any-motion detection uses the slope between two successive acceleration
+    signals to detect changes in motion. It generates an interrupt when a preset
+    threshold slope_th is exceeded. The threshold can be configured between 0 and
+    the maximum acceleration value corresponding to the selected measurement range.
+    The time difference between the successive acceleration signals depends on
+    the bandwidth of the configurable low pass filter and corresponds roughly
+    to 1/(2*bandwidth) (Δt=1/(2*bw)).
     """
 
     _slope_z_enabled = RWBit(_CONF, 3)
     _slope_y_enabled = RWBit(_CONF, 4)
     _slope_x_enabled = RWBit(_CONF, 5)
     _slope_int = ROBit(_INTERRUPTS, 0)
+    _slope_threshold = RWBits(4, _SLOPE_INFO, 2)
+    _slope_duration = RWBits(2, _SLOPE_INFO, 0)
+    _slope_filter_enable = RWBit(_SLOPE_INFO, 6)
 
     def __init__(self, i2c_bus):
         super().__init__(i2c_bus)
@@ -124,6 +139,24 @@ class BMA220_SLOPE(BMA220):
         self._slope_z_enabled = value
 
     @property
+    def slope_threshold(self) -> int:
+        """
+        the interrupt is only generated if a certain number :attr:`slope_duration`
+        of consecutive slope data points is above the slope threshold :attr:`slope_threshold`.
+        1 LSB threshold is 1 LSB of acc_data
+
+        """
+
+        return self._slope_threshold
+
+    @slope_threshold.setter
+    def slope_threshold(self, value: int) -> None:
+        if value not in range(0, 16, 1):
+            raise ValueError("Value must be a valid slope_threshold setting")
+
+        self._slope_threshold = value
+
+    @property
     def slope_interrupt(self) -> bool:
         """
         Sensor slope_z_enabled
@@ -131,3 +164,63 @@ class BMA220_SLOPE(BMA220):
         """
 
         return self._slope_int
+
+    @property
+    def slope_duration(self) -> int:
+        """
+        the interrupt is only generated if a certain number :attr:`slope_duration`
+        of consecutive slope data points is above the slope threshold :attr:`slope_threshold`.
+        define the number of consecutive slope data points above :attr:`slope_threshold`
+        which are required to set the interrupt:
+
+        +-------------------------------------------+------------------+
+        | Mode                                      | Value            |
+        +===========================================+==================+
+        | :py:const:`bma220_slope.SLOPE_DURATION_1` | :py:const:`0b00` |
+        +-------------------------------------------+------------------+
+        | :py:const:`bma220_slope.SLOPE_DURATION_2` | :py:const:`0b01` |
+        +-------------------------------------------+------------------+
+        | :py:const:`bma220_slope.SLOPE_DURATION_3` | :py:const:`0b10` |
+        +-------------------------------------------+------------------+
+        | :py:const:`bma220_slope.SLOPE_DURATION_4` | :py:const:`0b11` |
+        +-------------------------------------------+------------------+
+        """
+        values = (
+            "SLOPE_DURATION_1",
+            "SLOPE_DURATION_2",
+            "SLOPE_DURATION_3",
+            "SLOPE_DURATION_4",
+        )
+        return values[self._slope_duration]
+
+    @slope_duration.setter
+    def slope_duration(self, value: int) -> None:
+        if value not in (0, 1, 2, 3):
+            raise ValueError("Value must be a valid slope_duration setting")
+
+        self._slope_duration = value
+
+    @property
+    def slope_filter(self) -> int:
+        """
+        Defines whether filtered or unfiltered acceleration data should be used
+        (evaluated)
+
+        +------------------------------------------+-----------------+
+        | Mode                                     | Value           |
+        +==========================================+=================+
+        | :py:const:`bma220_slope.FILTER_DISABLED` | :py:const:`0b0` |
+        +------------------------------------------+-----------------+
+        | :py:const:`bma220_slope.FILTER_ENABLED`  | :py:const:`0b1` |
+        +------------------------------------------+-----------------+
+
+        """
+        values = ("FILTER_DISABLED", "FILTER_ENABLED")
+        return values[self._slope_filter_enable]
+
+    @slope_filter.setter
+    def slope_filter(self, value: int) -> None:
+        if value not in (0, 1):
+            raise ValueError("Value must be a valid slope_filter setting")
+
+        self._slope_filter_enable = value
