@@ -94,6 +94,3 @@ latched_mode_values = (
     LATCH_FOR_8S,
     LATCHED,
 )
-
-# class names:
-#     pass

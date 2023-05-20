@@ -64,8 +64,17 @@ Example showing the Slope sign setting
 Double Tap Example
 --------------------
 
-Example showing the Double Tap Setting
+Example showing the Double Tap Mode
 
 .. literalinclude:: ../examples/bma220_double_tap_test.py
     :caption: examples/bma220_double_tap_test.py
+    :linenos:
+
+Orientation Mode Example
+-------------------------
+
+Example showing the Orientation Mode
+
+.. literalinclude:: ../examples/bma220_orientation.py
+    :caption: examples/bma220_orientation.py
     :linenos:
