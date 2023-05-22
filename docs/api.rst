@@ -1,3 +1,5 @@
+BMA220 Library
+==============
 
 .. automodule:: bma220
     :members:
