@@ -78,3 +78,12 @@ Example showing the Orientation Mode
 .. literalinclude:: ../examples/bma220_orientation.py
     :caption: examples/bma220_orientation.py
     :lines: 5-
+
+Low G Mode Example
+-------------------------
+
+Example showing the Log g Mode
+
+.. literalinclude:: ../examples/bma220_lowg_test.py
+    :caption: examples/bma220_lowg_test.py
+    :lines: 5-
