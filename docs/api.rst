@@ -1,5 +1,5 @@
-BMA220 Library
-==============
+CircuitPython PBMA220 Library
+==============================
 
 .. automodule:: bma220
     :members:

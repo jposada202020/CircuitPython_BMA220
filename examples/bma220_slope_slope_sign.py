@@ -25,6 +25,6 @@ while True:
         for _ in range(10):
             print("Slope Interrupt Triggered:", bma.slope_interrupt)
             infox, infoy, infoz = bma.slope_interrupt_info
-            print("Slope First interrupt x:{} y:{} z:{}".format(infox, infoy, infoz))
+            print(f"Slope x:{infox}, y:{infoy}, z:{infoz}")
             time.sleep(0.5)
         bma.slope_sign = slope_sign

@@ -16,6 +16,6 @@ while True:
         print("Current Sleep duration setting: ", bma.sleep_duration)
         for _ in range(10):
             accx, accy, accz = bma.acceleration
-            print("x:{:.2f}g, y:{:.2f}g, z:{:.2f}g".format(accx, accy, accz))
+            print(f"x:{accx:.2f}m/s², y:{accy:.2f}m/s², z:{accz:.2f}m/s²")
             time.sleep(0.5)
         bma.sleep_duration = sleep_duration

@@ -22,12 +22,10 @@ keywords = [
     "sensor",
     "blinka",
     "circuitpython",
-    "micropython",
     "bma220",
     "acceleration",
     "digital",
     "bosch",
-    "sensor",
 ]
 license = {text = "MIT"}
 classifiers = [

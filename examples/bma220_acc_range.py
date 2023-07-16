@@ -16,6 +16,6 @@ while True:
         print("Current Acc range setting: ", bma.acc_range)
         for _ in range(10):
             accx, accy, accz = bma.acceleration
-            print("x:{:.2f}m/s2, y:{:.2f}m/s2, z:{:.2f}m/s2".format(accx, accy, accz))
+            print(f"x:{accx:.2f}m/s², y:{accy:.2f}m/s², z:{accz:.2f}m/s²")
             time.sleep(0.5)
         bma.acc_range = acc_range
