@@ -6,7 +6,6 @@ Introduction
     :target: https://circuitpython-bma220.readthedocs.io/
     :alt: Documentation Status
 
-
 .. image:: https://img.shields.io/pypi/v/circuitpython-bma220.svg
     :alt: latest version on PyPI
     :target: https://pypi.python.org/pypi/circuitpython-bma220
